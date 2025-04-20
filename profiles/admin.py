@@ -7,7 +7,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, date
 from django.conf import settings
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
@@ -35,9 +35,10 @@ def export_as_excel(modeladmin, request, queryset):
     for row_num, obj in enumerate(queryset, 2):
         for col_num, field_name in enumerate(field_names, 1):
             value = getattr(obj, field_name)
-            if field_name == 'date' and value:
-                value = value.strftime('%Y-%m-%d %H:%M')
-            worksheet.cell(row=row_num, column=col_num, value=str(value))
+        # Formatage de tous les champs de type date/datetime
+        if isinstance(value, (datetime, date)):
+            value = value.strftime('%Y-%m-%d %H:%M')
+        worksheet.cell(row=row_num, column=col_num, value=str(value))
 
     # Largeur colonnes
     for col_num, field_name in enumerate(field_names, 1):
@@ -72,12 +73,13 @@ def export_as_csv(modeladmin, request, queryset):
 
     for obj in queryset:
         row = []
-        for field in field_names:
-            value = getattr(obj, field)
-            if field == 'date' and value:
-                value = value.strftime('%Y-%m-%d %H:%M')
-            row.append(str(value))
-        writer.writerow(row)
+    for field in field_names:
+        value = getattr(obj, field)
+        # Si c'est un datetime ou une date, on le formate proprement
+        if isinstance(value, (datetime, date)):
+            value = value.strftime('%Y-%m-%d %H:%M')
+        row.append(str(value))
+    writer.writerow(row)
 
     return response
 
@@ -107,17 +109,22 @@ def export_as_pdf(modeladmin, request, queryset):
 
     for obj in queryset:
         row = []
-        for field in field_names:
-            value = getattr(obj, field)
-            if field == 'date' and value:
-                value = value.strftime('%Y-%m-%d %H:%M')
-            if field == "montant":
-                try:
-                    total_montant += float(value)
-                except (ValueError, TypeError):
-                    pass
-            row.append(str(value))
-        data.append(row)
+    for field in field_names:
+        value = getattr(obj, field)
+
+        # Gérer tous les champs de type date ou datetime
+        if isinstance(value, (datetime, date)):
+            value = value.strftime('%Y-%m-%d %H:%M')
+
+        # Total montant
+        if field == "montant":
+            try:
+                total_montant += float(value)
+            except (ValueError, TypeError):
+                pass
+
+        row.append(str(value))
+    data.append(row)
 
     table = Table(data)
     table.setStyle(TableStyle([
