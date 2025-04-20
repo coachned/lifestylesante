@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
+if not DEBUG:
     # Environnement local => SQLite
     DATABASES = {
         'default': {
