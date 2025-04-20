@@ -17,12 +17,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 
 # Export Excel
-# [...] le début reste inchangé
-
-# Export Excel
 def export_as_excel(modeladmin, request, queryset):
     meta = modeladmin.model._meta
-    field_names = [field.name for field in meta.fields if field.name not in ['deleted_at', 'id']]
+    field_names = [field.name for field in meta.fields if field.name not in ['is_deleted', 'id']]
 
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
@@ -65,7 +62,7 @@ export_as_excel.short_description = "Exporter en Excel"
 # Export CSV
 def export_as_csv(modeladmin, request, queryset):
     meta = modeladmin.model._meta
-    field_names = [field.name for field in meta.fields if field.name not in ['deleted_at', 'id']]
+    field_names = [field.name for field in meta.fields if field.name not in ['is_deleted', 'id']]
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename={slugify(str(meta.verbose_name_plural))}.csv'  # <-- Correction ici
@@ -90,13 +87,13 @@ export_as_csv.short_description = "Exporter en CSV"
 # Export PDF
 def export_as_pdf(modeladmin, request, queryset):
     meta = modeladmin.model._meta
-    field_names = [field.name for field in meta.fields if field.name not in ['deleted_at', 'id']]
+    field_names = [field.name for field in meta.fields if field.name not in ['is_deleted', 'id']]
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     elements = []
 
-    logo_path = settings.BASE_DIR / 'static' / 'images' / 'logo_lifestyle.jpg'
+    logo_path = settings.BASE_DIR / 'static' / 'img' / 'logo_lifestyle.jpg'
     logo = Image(logo_path, width=100, height=50)
     elements.append(logo)
 
