@@ -11,7 +11,7 @@ from datetime import datetime
 from django.conf import settings
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, A3, A2, A0
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
@@ -35,7 +35,7 @@ def export_as_excel(modeladmin, request, queryset):
     for row_num, obj in enumerate(queryset, 2):
         for col_num, field_name in enumerate(field_names, 1):
             value = getattr(obj, field_name)
-            if field_name == 'date' and value:
+            if field_name == 'date_arrivee' and value:
                 value = value.strftime('%Y-%m-%d %H:%M')
             worksheet.cell(row=row_num, column=col_num, value=str(value))
 
@@ -74,7 +74,7 @@ def export_as_csv(modeladmin, request, queryset):
         row = []
         for field in field_names:
             value = getattr(obj, field)
-            if field == 'date' and value:
+            if field == 'date_arrivee' and value:
                 value = value.strftime('%Y-%m-%d %H:%M')
             row.append(str(value))
         writer.writerow(row)
@@ -109,7 +109,7 @@ def export_as_pdf(modeladmin, request, queryset):
         row = []
         for field in field_names:
             value = getattr(obj, field)
-            if field == 'date' and value:
+            if field == 'date_arrivee' and value:
                 value = value.strftime('%Y-%m-%d %H:%M')
             if field == "montant":
                 try:
