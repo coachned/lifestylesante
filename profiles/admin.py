@@ -17,13 +17,16 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 
 # Export Excel
+# [...] le début reste inchangé
+
+# Export Excel
 def export_as_excel(modeladmin, request, queryset):
     meta = modeladmin.model._meta
     field_names = [field.name for field in meta.fields if field.name not in ['deleted_at', 'id']]
 
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
-    worksheet.title = slugify(meta.verbose_name_plural)
+    worksheet.title = slugify(str(meta.verbose_name_plural))  # <-- Correction ici
 
     # En-têtes en gras
     for col_num, field_name in enumerate(field_names, 1):
@@ -48,7 +51,7 @@ def export_as_excel(modeladmin, request, queryset):
     workbook.save(output)
     output.seek(0)
 
-    filename = f"{slugify(meta.verbose_name_plural)}.xlsx"
+    filename = f"{slugify(str(meta.verbose_name_plural))}.xlsx"  # <-- Correction ici
     response = HttpResponse(
         output,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -65,8 +68,8 @@ def export_as_csv(modeladmin, request, queryset):
     field_names = [field.name for field in meta.fields if field.name not in ['deleted_at', 'id']]
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename={slugify(meta.verbose_name_plural)}.csv'
-    
+    response['Content-Disposition'] = f'attachment; filename={slugify(str(meta.verbose_name_plural))}.csv'  # <-- Correction ici
+
     writer = csv.writer(response)
     writer.writerow(field_names)
 
@@ -93,18 +96,15 @@ def export_as_pdf(modeladmin, request, queryset):
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     elements = []
 
-    # Ajouter un logo en haut à gauche
-    logo_path = settings.BASE_DIR / 'static' / 'images' / 'logo_lifestyle.jpg'  # Assure-toi que le chemin d'accès au logo est correct
-    logo = Image(logo_path, width=100, height=50)  # Ajuste la taille du logo
+    logo_path = settings.BASE_DIR / 'static' / 'images' / 'logo_lifestyle.jpg'
+    logo = Image(logo_path, width=100, height=50)
     elements.append(logo)
 
-    # Titre et date de génération
     styles = getSampleStyleSheet()
-    title = Paragraph(f"<b>Export de {meta.verbose_name_plural.title()}</b>", styles['Title'])
+    title = Paragraph(f"<b>Export de {str(meta.verbose_name_plural).title()}</b>", styles['Title'])  # <-- Correction ici
     date_gen = Paragraph(f"Date de génération : {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal'])
     elements.extend([title, date_gen, Spacer(1, 12)])
 
-    # Données à exporter
     data = [field_names]
     total_montant = 0
 
@@ -141,7 +141,7 @@ def export_as_pdf(modeladmin, request, queryset):
     doc.build(elements)
     buffer.seek(0)
 
-    filename = f"{slugify(meta.verbose_name_plural)}.pdf"
+    filename = f"{slugify(str(meta.verbose_name_plural))}.pdf"  # <-- Correction ici
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
